@@ -1,7 +1,7 @@
 import type { Metrics } from './types'
 
 const listeners = new Set<(metrics: Metrics) => void>()
-const emptyMetrics: Metrics = { avgInferenceMs: 0, totalAssessed: 0, queuedCount: 0, avgQueueWaitMs: 0, syncSuccessRate: 0, retryCount: 0 }
+const emptyMetrics: Metrics = { avgInferenceMs: 0, totalAssessed: 0, queuedCount: 0, avgQueueWaitMs: 0, syncSuccessRate: 0, retryCount: 0, bytesSent: 0, failedWrites: 0 }
 
 // TODO(codex): implement
 export async function getMetrics(): Promise<Metrics> { return { ...emptyMetrics } }
