@@ -1,31 +1,40 @@
-import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { tmpdir } from 'node:os'
 import { performance } from 'node:perf_hooks'
 import { pipeline } from '@huggingface/transformers'
 
 const sampleDir = resolve('public/samples')
-const localFiles = existsSync(sampleDir) ? readdirSync(sampleDir).filter((name) => /\.(png|jpe?g|webp)$/i.test(name)) : []
-const trackedFiles = execFileSync('git', ['ls-tree', '-r', '--name-only', 'HEAD', 'public/samples'], { encoding: 'utf8' })
-  .split(/\r?\n/).filter((path) => /\.(png|jpe?g|webp)$/i.test(path))
-const names = [...new Set([...localFiles, ...trackedFiles.map((path) => path.slice('public/samples/'.length))])]
-if (!names.length) throw new Error('No sample images found in public/samples or HEAD')
-
-const loadFiles = new Map()
-for (const name of names) {
-  const source = join(sampleDir, name)
-  if (existsSync(source)) loadFiles.set(name, source)
-  else {
-    const targetDir = join(tmpdir(), 'resqedge-sample-eval')
-    mkdirSync(targetDir, { recursive: true })
-    const target = join(targetDir, name)
-    writeFileSync(target, execFileSync('git', ['show', `HEAD:public/samples/${name}`], { maxBuffer: 50 * 1024 * 1024 }))
-    loadFiles.set(name, target)
-  }
+const imagePattern = /\.(png|jpe?g|webp)$/i
+function findImages(directory, relative = '') {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = join(relative, entry.name)
+    const fullPath = join(directory, entry.name)
+    if (entry.isDirectory()) return findImages(fullPath, relativePath)
+    return entry.isFile() && imagePattern.test(entry.name) ? [{ file: relativePath.replaceAll('\\', '/'), path: fullPath }] : []
+  })
 }
 
-console.log(`Loading CLIP model for ${names.length} sample image(s)…`)
+const descriptions = {
+  'sample1.jpg': 'Multi-storey building collapsed into rubble',
+  'sample2.jpg': 'Partly collapsed house with cracked walls and rubble',
+  'sample3.jpg': 'Several buildings with major collapse and debris',
+  'sample4.jpg': 'Severely damaged building with partial floor collapse',
+  'sample5.jpg': 'Two views of partly collapsed buildings and rubble',
+  'sample6.jpg': 'Collapsed multi-storey building with responders nearby',
+  'sample7.jpg': 'Residential building with widespread collapse and rubble',
+  'sample8.jpg': 'Flooded residential street and inundated ground floors',
+  'sample9.jpg': 'Flooded street with a partly submerged car and pedestrians',
+  'sample10.jpg': 'Residential street inundated by floodwater',
+  'sample11.jpg': 'Flooded neighborhood with submerged cars',
+  'sample12.jpg': 'Partially collapsed building with a responder in foreground',
+  'sample13.jpg': 'Standing house with roof loss, cracked walls, and a tarp',
+  'sample14.jpg': 'Major building collapse with rescue workers and rubble',
+}
+
+const images = findImages(sampleDir).sort((a, b) => a.file.localeCompare(b.file, undefined, { numeric: true }))
+if (!images.length) throw new Error(`No sample images found under ${sampleDir}`)
+console.log(`Found ${images.length} image(s) recursively under public/samples.`)
+console.log('Loading CLIP model…')
 let lastLoggedProgress = -25
 const classifier = await pipeline('zero-shot-image-classification', 'Xenova/clip-vit-base-patch32', {
   progress_callback: (progress) => {
@@ -45,22 +54,27 @@ const severityByClass = { intact: 5, minor: 25, moderate: 48, severe: 73, destro
 const promptSets = {
   before: classes.map((damageClass) => `a disaster damage assessment photo showing ${damageClass} damage`),
   after: [
-    'a photo of an intact undamaged building with no visible cracks or collapse',
-    'a photo of a building with minor cosmetic damage and a few small cracks',
-    'a photo of a building with moderate structural damage, large cracks, or partial wall failure',
-    'a photo of a severely damaged building with major structural failure that is still partly standing',
-    'a photo of a destroyed collapsed building reduced to rubble after a disaster',
+    'an intact undamaged residential building with no structural damage',
+    'a residential building with minor damage such as small cracks or broken windows, but no collapsed walls or floors',
+    'a residential building with moderate earthquake damage, deep cracks across walls, or a partly damaged roof, but most of the house remains standing; or a flooded street with houses and cars partially submerged',
+    'a heavily earthquake damaged residential building with partial collapse, fallen floors, broken walls, exposed rooms, and rubble, but part of the structure remains standing',
+    'a completely collapsed building with pancaked floors, crushed walls, and a large pile of rubble',
   ],
 }
-for (const [file, path] of loadFiles) {
-  for (const [version, labels] of Object.entries(promptSets)) {
+
+const rows = []
+for (const { file, path } of images) {
+  for (const [version, prompts] of Object.entries(promptSets)) {
     const start = performance.now()
-    const result = await classifier(path, labels)
+    const result = await classifier(path, prompts, { hypothesis_template: version === 'after' ? '{}' : 'This is a photo of {}' })
     const inferenceMs = Math.round(performance.now() - start)
     const best = result[0]
-    const labelIndex = labels.indexOf(best.label)
-    const damageClass = classes[labelIndex]
-    if (!damageClass) throw new Error(`Unknown model label: ${best.label}`)
-    console.log(JSON.stringify({ version, file, class: damageClass, severity: severityByClass[damageClass], confidence: Math.round(best.score * 100), inferenceMs, source: 'model', rawLabel: best.label }))
+    const damageClass = classes[prompts.indexOf(best.label)]
+    if (!damageClass) throw new Error(`Unknown model label for ${file}: ${best.label}`)
+    rows.push({ version, file, what: descriptions[file] ?? 'Image description not manually reviewed', damageClass, severity: severityByClass[damageClass], confidence: `${Math.round(best.score * 100)}%`, inferenceMs, source: 'model' })
   }
 }
+
+console.log('| Prompt set | File | What it shows | Class | Severity | Confidence | Inference ms | Source |')
+console.log('| --- | --- | --- | --- | ---: | ---: | ---: | --- |')
+for (const row of rows) console.log(`| ${row.version} | ${row.file} | ${row.what} | ${row.damageClass} | ${row.severity} | ${row.confidence} | ${row.inferenceMs} | ${row.source} |`)
