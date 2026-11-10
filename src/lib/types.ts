@@ -32,6 +32,8 @@ export interface InferenceResult {
 /** Persisted field assessment. `imageDataUrl` should contain a small thumbnail. */
 export interface Assessment {
   id: string
+  seq: number
+  locationLabel: string
   imageDataUrl: string
   damageClass: DamageClass
   severity: number
@@ -47,6 +49,20 @@ export interface Assessment {
   /** Unix epoch timestamp in milliseconds. */
   createdAt: number
   syncedAt?: number
+}
+
+export type AssessStep = 'idle' | 'preprocess' | 'inference' | 'triage' | 'saved'
+export type ModelState = 'idle' | 'loading' | 'ready' | 'fallback' | 'error'
+
+export interface Recommendation { id: string; title: string; detail: string; priority: Priority }
+export interface SyncPoint { t: number; synced: number; pending: number }
+export interface AssessmentDraft {
+  imageDataUrl: string
+  result: InferenceResult
+  context: ContextInput
+  lat?: number
+  lng?: number
+  locationLabel: string
 }
 
 /** Discriminated progress events emitted by the sync engine. */
@@ -65,4 +81,6 @@ export interface Metrics {
   avgQueueWaitMs: number
   syncSuccessRate: number
   retryCount: number
+  bytesSent: number
+  failedWrites: number
 }

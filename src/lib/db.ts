@@ -7,18 +7,15 @@ export class ResQDatabase extends Dexie {
   constructor() {
     super('resqedge')
     this.version(1).stores({ assessments: 'id, status, priority, createdAt' })
+    this.version(2).stores({ assessments: 'id, seq, status, priority, createdAt' })
   }
 }
 
 export const db = new ResQDatabase()
 
-// TODO(codex): implement
 export async function saveAssessment(assessment: Assessment): Promise<void> { await db.assessments.put(assessment) }
-// TODO(codex): implement
 export async function getQueued(): Promise<Assessment[]> { return db.assessments.where('status').equals('queued').toArray() }
-// TODO(codex): implement
 export async function updateAssessment(id: string, changes: Partial<Assessment>): Promise<void> {
   await db.assessments.update(id, changes)
 }
-// TODO(codex): implement
 export async function getAll(): Promise<Assessment[]> { return db.assessments.toArray() }
