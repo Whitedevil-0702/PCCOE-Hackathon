@@ -1,17 +1,17 @@
 import type { DamageClass, InferenceResult } from './types'
 import { recordInference } from './metrics'
+import { scoreDamageProbabilities } from './scoring'
 
-type Classifier = (image: Blob | string, labels: string[]) => Promise<Array<{ label: string; score: number }>>
+type Classifier = (image: Blob | string, labels: string[], options?: { hypothesis_template?: string }) => Promise<Array<{ label: string; score: number }>>
 let classifier: Classifier | undefined
 let modelPromise: Promise<void> | undefined
 let modelReady = false
-const labels: DamageClass[] = ['intact', 'minor', 'moderate', 'severe', 'destroyed']
 const candidatePrompts = [
-  'a photo of an intact undamaged building with no visible cracks or collapse',
-  'a photo of a building with minor cosmetic damage and a few small cracks',
-  'a photo of a building with moderate structural damage, large cracks, or partial wall failure',
-  'a photo of a severely damaged building with major structural failure that is still partly standing',
-  'a photo of a destroyed collapsed building reduced to rubble after a disaster',
+  'an intact undamaged residential building with no structural damage',
+  'a residential building with minor damage such as small cracks or broken windows, but no collapsed walls or floors',
+  'a residential building with moderate earthquake damage, deep cracks across walls, or a partly damaged roof, but most of the house remains standing; or a flooded street with houses and cars partially submerged',
+  'a heavily earthquake damaged residential building with partial collapse, fallen floors, broken walls, exposed rooms, and rubble, but part of the structure remains standing',
+  'a completely collapsed building with pancaked floors, crushed walls, and a large pile of rubble',
 ]
 
 export async function initModel(onProgress?: (progress: number) => void): Promise<void> {
@@ -78,13 +78,10 @@ export async function runInference(image: Blob | string): Promise<InferenceResul
   let result: InferenceResult
   try {
     if (!classifier) await initModel()
-    const output = await classifier!(image, candidatePrompts)
-    const best = output[0]
-    if (!best) throw new Error('No classifier result')
-    const classIndex = candidatePrompts.indexOf(best.label)
-    if (classIndex < 0) throw new Error('Classifier returned an unknown label')
-    const damageClass = labels[classIndex]
-    result = { damageClass, severity: [5, 25, 48, 73, 94][classIndex], confidence: Math.round(best.score * 100), inferenceMs: Math.round(performance.now() - started), source: 'model' }
+    const output = await classifier!(image, candidatePrompts, { hypothesis_template: '{}' })
+    const scores = candidatePrompts.map((prompt) => output.find((candidate) => candidate.label === prompt)?.score ?? 0)
+    const scored = scoreDamageProbabilities(scores)
+    result = { ...scored, inferenceMs: Math.round(performance.now() - started), source: 'model' }
   } catch { result = await fallback(image, Math.round(performance.now() - started)) }
   result.inferenceMs = Math.round(performance.now() - started)
   recordInference(result.inferenceMs)
