@@ -32,5 +32,6 @@ describe('computePriority', () => {
     expect(computePriority(500, neutral).priority).toBe('Critical')
     expect(computePriority(-10, neutral).priority).toBe('Low')
     expect(computePriority(50, neutral).reason).toContain('moderate reported damage')
+    expect(computePriority(40, neutral).reason).toContain('limited reported damage')
   })
 })

@@ -27,7 +27,6 @@ const descriptions = {
   'sample10.jpg': 'Residential street inundated by floodwater',
   'sample11.jpg': 'Flooded neighborhood with submerged cars',
   'sample12.jpg': 'Partially collapsed building with a responder in foreground',
-  'sample13.jpg': 'Standing house with roof loss, cracked walls, and a tarp',
   'sample14.jpg': 'Major building collapse with rescue workers and rubble',
 }
 
