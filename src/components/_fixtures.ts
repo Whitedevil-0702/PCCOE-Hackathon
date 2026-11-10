@@ -14,8 +14,6 @@ export interface FieldAssessmentResult extends InferenceResult {
 }
 
 export interface QueueRow extends Assessment {
-  seq?: number
-  locationLabel?: string
   retryDelayMs?: number
 }
 
@@ -401,6 +399,8 @@ export const fixtureMetrics: Metrics = {
   avgQueueWaitMs: 72000,
   syncSuccessRate: 0.92,
   retryCount: 5,
+  bytesSent: 184_320,
+  failedWrites: 1,
 }
 
 export const fixtureDeviceStatus: DeviceStatus = {
