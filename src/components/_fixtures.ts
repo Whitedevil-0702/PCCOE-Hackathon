@@ -253,7 +253,7 @@ export const fixtureQueue: QueueRow[] = [
   },
 ]
 
-export const fixtureQueueReordered: QueueRow[] = [...fixtureQueue].sort((a, b) => b.createdAt - a.createdAt)
+export const fixtureQueueReordered: QueueRow[] = [...fixtureQueue].sort((a, b) => a.createdAt - b.createdAt)
 
 export const fixtureMarkers: MapMarker[] = [
   {

@@ -142,7 +142,7 @@ export default function UiPreview() {
         teamName={fixtureTeamName}
         offlineDataKb={fixtureOfflineDataKb}
       >
-        <div className="ui-preview">
+        <div className="ui-preview" data-queue-order={queueByTime ? 'time' : 'priority'}>
           <header className="page-header">
             <div>
               <p className="page-eyebrow">Hidden component bench</p>
