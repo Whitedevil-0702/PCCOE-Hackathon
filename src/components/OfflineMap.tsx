@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import type { MapMarker } from './_fixtures'
+import type { MapMarker } from './uiTypes'
 import { priorityColor, prioritySlug } from './format'
 
 const MAP_WIDTH = 800

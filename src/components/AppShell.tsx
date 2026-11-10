@@ -4,9 +4,7 @@ import {
   ChevronDown,
   Cpu,
   Database,
-  HardDrive,
   LayoutDashboard,
-  Map,
   Radio,
   RefreshCw,
   Settings,
@@ -18,7 +16,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { NetworkMode } from '../lib/types'
-import type { DeviceStatus } from './_fixtures'
+interface DeviceStatus { modelReady: boolean; dbRecords: number; lastSyncAt?: number }
 import { formatKb, formatRelative } from './format'
 
 interface NetworkMeta {
@@ -52,10 +50,7 @@ const NETWORK_META: Record<NetworkMode, NetworkMeta> = {
 const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/field', label: 'Field Upload', icon: UploadCloud },
-  { to: '/database', label: 'Local Database', icon: Database },
   { to: '/queue', label: 'Sync Queue', icon: RefreshCw },
-  { to: '/models', label: 'Offline AI Models', icon: Cpu },
-  { to: '/map', label: 'Map & Triage', icon: Map },
   { to: '/central', label: 'Central', icon: Radio },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
@@ -213,11 +208,6 @@ export function DeviceStatusCard({ status }: { status: DeviceStatus }) {
         <Database size={14} aria-hidden />
         <span>Local DB</span>
         <span className="device-value tabular">{status.dbRecords} rec</span>
-      </div>
-      <div className="device-row">
-        <HardDrive size={14} aria-hidden />
-        <span>Storage</span>
-        <span className="device-value tabular">{Math.round(status.storageUsedMb)} MB</span>
       </div>
       <div className="device-row">
         <RefreshCw size={14} aria-hidden />

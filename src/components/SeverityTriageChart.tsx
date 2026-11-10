@@ -1,5 +1,5 @@
 import { BarChart3, RefreshCw } from 'lucide-react'
-import type { SeverityCounts } from './_fixtures'
+import type { SeverityCounts } from './uiTypes'
 import { PRIORITIES, priorityColor, prioritySlug } from './format'
 import { EmptyState } from './EmptyState'
 import { Panel } from './Panel'

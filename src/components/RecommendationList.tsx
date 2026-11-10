@@ -1,5 +1,5 @@
 import { MapPin } from 'lucide-react'
-import type { TriageRecommendation } from './_fixtures'
+import type { TriageRecommendation } from './uiTypes'
 import { EmptyState } from './EmptyState'
 import { PriorityChip } from './PriorityChip'
 

@@ -15,8 +15,7 @@ import {
   Sparkles,
   Timer,
 } from 'lucide-react'
-import type { ContextInput, Priority } from '../lib/types'
-import type { FieldAssessmentResult, ModelStatus, PipelineStep } from './_fixtures'
+import type { ContextInput, InferenceResult, ModelState, AssessStep, Priority } from '../lib/types'
 import {
   capitalize,
   damageColor,
@@ -31,7 +30,7 @@ import { PriorityChip } from './PriorityChip'
 
 export const DEFAULT_SAMPLE_SOURCES = Array.from({ length: 8 }, (_, index) => `/samples/sample${index + 1}.jpg`)
 
-type ActiveStep = Exclude<PipelineStep, 'idle'>
+type ActiveStep = Exclude<AssessStep, 'idle'>
 
 const PIPELINE_STEPS: { key: ActiveStep; label: string }[] = [
   { key: 'preprocess', label: 'Preprocess' },
@@ -71,7 +70,7 @@ function SampleThumb({
 export interface FieldCapturePanelProps {
   imageUrl?: string | null
   running?: boolean
-  result?: FieldAssessmentResult | null
+  result?: (InferenceResult & { priority?: Priority; priorityReason?: string }) | null
   context: ContextInput
   onContextChange: (context: ContextInput) => void
   locationLabel: string
@@ -82,8 +81,8 @@ export interface FieldCapturePanelProps {
   onSave?: () => void
   coords?: { lat: number; lng: number } | null
   capturedAt?: number | null
-  modelStatus?: ModelStatus
-  pipelineStep?: PipelineStep
+  modelStatus?: { state: ModelState; progress?: number; label?: string }
+  pipelineStep?: AssessStep
   pipelineMs?: number
   priorityPreview?: { priority: Priority; reason: string } | null
   saved?: boolean
@@ -105,7 +104,7 @@ export function FieldCapturePanel({
   onSave,
   coords,
   capturedAt,
-  modelStatus = { state: 'ready' },
+  modelStatus = { state: 'idle' },
   pipelineStep = 'idle',
   pipelineMs = 0,
   priorityPreview,

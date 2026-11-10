@@ -1,12 +1,12 @@
 import { Activity, AlertTriangle, CheckCheck, CheckCircle2, RefreshCw, XCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { SyncLogEntry } from './_fixtures'
+import type { SyncEvent } from '../lib/types'
 import { EmptyState } from './EmptyState'
-import { formatClock, formatDuration } from './format'
+import { formatDuration } from './format'
 import { Panel } from './Panel'
 
 export interface SyncEventLogProps {
-  events: SyncLogEntry[]
+  events: SyncEvent[]
   isSyncing?: boolean
   title?: string
   subtitle?: string
@@ -18,10 +18,10 @@ interface EventMeta {
   icon: LucideIcon
   tone: string
   title: string
-  detail?: (event: SyncLogEntry) => string
+  detail?: (event: SyncEvent) => string
 }
 
-function eventMeta(event: SyncLogEntry): EventMeta {
+function eventMeta(event: SyncEvent): EventMeta {
   switch (event.type) {
     case 'item-start':
       return { icon: RefreshCw, tone: 'is-syncing', title: 'Sync started' }
@@ -77,7 +77,7 @@ export function SyncEventLog({
             const meta = eventMeta(event)
             const Icon = meta.icon
             const rawId = 'id' in event ? event.id : 'queue-drained'
-            const itemId = event.seq ? `#RE-${String(event.seq).padStart(3, '0')}` : rawId.slice(0, 8)
+            const itemId = rawId.slice(0, 8)
             return (
               <li className={`event-row ${meta.tone}`} key={`${event.type}-${rawId}-${index}`}>
                 <span className="event-icon" aria-hidden>
@@ -86,7 +86,7 @@ export function SyncEventLog({
                 <div className="event-copy">
                   <div className="event-top">
                     <span className="event-title">{meta.title}</span>
-                    <span className="event-time tabular">{event.at ? formatClock(event.at) : 'Live'}</span>
+                    <span className="event-time tabular">Live</span>
                   </div>
                   {event.type === 'queue-drained' ? (
                     <p className="event-detail">All queued assessments have reached the cloud.</p>

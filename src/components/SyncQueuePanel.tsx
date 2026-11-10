@@ -1,5 +1,5 @@
 import { Inbox, MapPin, RefreshCw } from 'lucide-react'
-import type { QueueRow } from './_fixtures'
+import type { Assessment } from '../lib/types'
 import { damageColor, damageLabel, formatClock, formatCoord, prioritySlug } from './format'
 import { EmptyState } from './EmptyState'
 import { Panel } from './Panel'
@@ -8,7 +8,7 @@ import { StatusLabel } from './StatusLabel'
 import { useFlip } from './useFlip'
 
 export interface SyncQueuePanelProps {
-  rows: QueueRow[]
+  rows: Assessment[]
   persistedCount: number
   failedWrites: number
   title?: string
@@ -18,10 +18,9 @@ export interface SyncQueuePanelProps {
   className?: string
 }
 
-function resolveStatus(row: QueueRow): { label: string; detail?: string } {
+function resolveStatus(row: Assessment): { label: string; detail?: string } {
   if (row.status === 'queued' && row.attempts > 0) {
-    const seconds = Math.max(1, Math.ceil((row.retryDelayMs ?? 2000) / 1000))
-    return { label: `Retrying in ${seconds}s`, detail: `(attempt ${row.attempts})` }
+    return { label: 'Retry scheduled', detail: `(attempt ${row.attempts})` }
   }
   switch (row.status) {
     case 'queued':

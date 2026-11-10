@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, MapPin, ScanLine } from 'lucide-react'
-import type { MapMarker, TriageRecommendation, TriageStats } from './_fixtures'
+import type { MapMarker, TriageRecommendation, TriageStats } from './uiTypes'
 import { OfflineMap } from './OfflineMap'
 import { Panel } from './Panel'
 import { RecommendationList } from './RecommendationList'

@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { Activity } from 'lucide-react'
-import type { ChartPoint } from './_fixtures'
+import type { ChartPoint } from './uiTypes'
 import { formatClock } from './format'
 import { EmptyState } from './EmptyState'
 import { Panel } from './Panel'

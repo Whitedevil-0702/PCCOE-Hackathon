@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import type { MapMarker } from './_fixtures'
+import type { MapMarker } from './uiTypes'
 import { damageLabel, priorityColor } from './format'
 import { OfflineMap } from './OfflineMap'
 
@@ -15,6 +15,7 @@ const TILE_FAILURE_LIMIT = 3
 export function CentralMap({ markers, className = '' }: CentralMapProps) {
   const [tileFailures, setTileFailures] = useState(0)
   const handleTileError = useCallback(() => setTileFailures((value) => value + 1), [])
+  if (markers.length === 0) return <OfflineMap markers={markers} />
 
   const center: [number, number] =
     markers.length > 0
