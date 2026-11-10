@@ -1,9 +1,8 @@
 import { AlertTriangle, CheckCircle2, MapPin, ScanLine } from 'lucide-react'
 import type { MapMarker, TriageRecommendation, TriageStats } from './_fixtures'
-import { EmptyState } from './EmptyState'
 import { OfflineMap } from './OfflineMap'
 import { Panel } from './Panel'
-import { PriorityChip } from './PriorityChip'
+import { RecommendationList } from './RecommendationList'
 import { StatTile } from './StatTile'
 
 export interface TriagePanelProps {
@@ -38,31 +37,7 @@ export function TriagePanel({
 
         <div className="triage-recommendations">
           <p className="triage-heading">Triage recommendations:</p>
-          {recommendations.length === 0 ? (
-            <EmptyState
-              icon={MapPin}
-              title="No recommendations yet"
-              message="Each saved local scan produces a priority recommendation here."
-              compact
-            />
-          ) : (
-            <ol className="triage-list">
-              {recommendations.map((recommendation, index) => (
-                <li className="triage-item" key={recommendation.id}>
-                  <span className="triage-index tabular" aria-hidden>
-                    {index + 1}
-                  </span>
-                  <div className="triage-copy">
-                    <div className="triage-title-row">
-                      <span className="triage-title">{recommendation.title}</span>
-                      <PriorityChip priority={recommendation.priority} />
-                    </div>
-                    <p>{recommendation.detail}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
+          <RecommendationList recommendations={recommendations} />
         </div>
 
         <div className="triage-stats">

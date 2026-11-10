@@ -37,6 +37,17 @@ export function prioritySlug(priority: Priority): string {
   return priority.toLowerCase()
 }
 
+export function priorityRank(priority: Priority): number {
+  return PRIORITIES.indexOf(priority)
+}
+
+export function comparePriorityThenRecency(
+  a: { priority: Priority; createdAt: number },
+  b: { priority: Priority; createdAt: number },
+): number {
+  return priorityRank(a.priority) - priorityRank(b.priority) || b.createdAt - a.createdAt
+}
+
 export function priorityColor(priority: Priority): string {
   return PRIORITY_COLORS[priority]
 }

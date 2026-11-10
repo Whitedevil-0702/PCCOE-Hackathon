@@ -5,6 +5,7 @@ import type {
   InferenceResult,
   Metrics,
   Priority,
+  SyncEvent,
 } from '../lib/types'
 
 export interface FieldAssessmentResult extends InferenceResult {
@@ -48,7 +49,7 @@ export interface SeverityCounts {
   Low: number
 }
 
-export type ModelState = 'ready' | 'loading' | 'fallback'
+export type ModelState = 'idle' | 'loading' | 'ready' | 'fallback' | 'error'
 
 export interface ModelStatus {
   state: ModelState
@@ -254,6 +255,43 @@ export const fixtureQueue: QueueRow[] = [
 ]
 
 export const fixtureQueueReordered: QueueRow[] = [...fixtureQueue].sort((a, b) => a.createdAt - b.createdAt)
+
+export type SyncLogEntry = SyncEvent & { seq?: number; at?: number }
+
+export const fixtureSyncEvents: SyncLogEntry[] = [
+  { type: 'item-start', id: '2c7b8d44-5e6f-4a10-9b22-7c1f3a8d6e02', seq: 107, at: BASE_TIME - 30000 },
+  {
+    type: 'item-failed',
+    id: '1d9f3b72-8a4c-4e61-b7d0-3f2a6c9e5b04',
+    seq: 105,
+    at: BASE_TIME - 36000,
+  },
+  {
+    type: 'item-retry',
+    id: '6a4c2e90-3d8b-4f57-a1c3-9e5b7d2f4a03',
+    seq: 106,
+    attempt: 2,
+    delayMs: 2000,
+    at: BASE_TIME - 48000,
+  },
+  {
+    type: 'item-success',
+    id: '4e7a9d28-6c1b-4f35-b9a2-8d3e5c1f7b06',
+    seq: 103,
+    at: BASE_TIME - 60000,
+  },
+]
+
+export const fixtureLastSyncAt = BASE_TIME - 42000
+export const fixtureCentralUpdatedAt = BASE_TIME - 12000
+export const fixtureFailedWrites = 1
+
+export const fixtureCentralItems: QueueRow[] = fixtureQueue.map((row, index) => ({
+  ...row,
+  status: 'synced',
+  attempts: 0,
+  syncedAt: BASE_TIME - 30000 - index * 45000,
+}))
 
 export const fixtureMarkers: MapMarker[] = [
   {
