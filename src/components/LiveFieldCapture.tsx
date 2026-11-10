@@ -15,6 +15,6 @@ export function LiveFieldCapture({className}:{className?:string}) {
  const run=async()=>{if(blob)setResult(await assess.run(blob))}
  const sample=async(src:string)=>{try{const response=await fetch(src);if(!response.ok)return;const data=await response.blob();setBlob(data);setImageUrl(src);setResult(await assess.run(data));setSaved(false)}catch{setImageUrl(null)}}
  const preview=result?computePriority(result.severity,context):null
- const save=async()=>{if(!result||!imageUrl)return;await assess.save({imageDataUrl:blob?await toDataUrl(blob):imageUrl,result,context,locationLabel:locationLabel.trim()});setSaved(true)}
+ const save=async()=>{if(!result||!imageUrl)return;const offset=0.009;await assess.save({imageDataUrl:blob?await toDataUrl(blob):imageUrl,result,context,lat:18.5204+(Math.random()-0.5)*offset,lng:73.8567+(Math.random()-0.5)*offset,locationLabel:locationLabel.trim()});setSaved(true)}
  return <FieldCapturePanel className={className} imageUrl={imageUrl} running={assess.running} result={result?{...result,priority:preview?.priority,priorityReason:preview?.reason}:null} context={context} onContextChange={setContext} locationLabel={locationLabel} onLocationLabelChange={setLocationLabel} onImageSelected={selectFile} onSampleSelected={(src)=>void sample(src)} onRun={()=>void run()} onSave={()=>void save()} modelStatus={model} pipelineStep={assess.step} priorityPreview={preview} saved={saved}/>
 }
