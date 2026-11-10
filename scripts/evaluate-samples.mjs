@@ -50,7 +50,8 @@ const classifier = await pipeline('zero-shot-image-classification', 'Xenova/clip
 console.log('CLIP_MODEL_LOADED')
 
 const classes = ['intact', 'minor', 'moderate', 'severe', 'destroyed']
-const severityByClass = { intact: 5, minor: 25, moderate: 48, severe: 73, destroyed: 94 }
+const severityWeights = [5, 25, 50, 78, 95]
+const confidenceTemperature = 2
 const promptSets = {
   before: classes.map((damageClass) => `a disaster damage assessment photo showing ${damageClass} damage`),
   after: [
@@ -68,10 +69,16 @@ for (const { file, path } of images) {
     const start = performance.now()
     const result = await classifier(path, prompts, { hypothesis_template: version === 'after' ? '{}' : 'This is a photo of {}' })
     const inferenceMs = Math.round(performance.now() - start)
-    const best = result[0]
-    const damageClass = classes[prompts.indexOf(best.label)]
-    if (!damageClass) throw new Error(`Unknown model label for ${file}: ${best.label}`)
-    rows.push({ version, file, what: descriptions[file] ?? 'Image description not manually reviewed', damageClass, severity: severityByClass[damageClass], confidence: `${Math.round(best.score * 100)}%`, inferenceMs, source: 'model' })
+    const logits = classes.map((_, index) => Math.log(Math.max(result.find((candidate) => candidate.label === prompts[index])?.score ?? 0, 1e-6)) / confidenceTemperature)
+    const maxLogit = Math.max(...logits)
+    const exponentials = logits.map((logit) => Math.exp(logit - maxLogit))
+    const total = exponentials.reduce((sum, value) => sum + value, 0)
+    const probabilities = exponentials.map((value) => value / total)
+    const bestIndex = probabilities.indexOf(Math.max(...probabilities))
+    const damageClass = classes[bestIndex]
+    const severity = Math.round(probabilities.reduce((sum, probability, index) => sum + probability * severityWeights[index], 0) * 10) / 10
+    const confidence = Math.round(probabilities[bestIndex] * 10_000) / 100
+    rows.push({ version, file, what: descriptions[file] ?? 'Image description not manually reviewed', damageClass, severity, confidence: `${confidence}%`, inferenceMs, source: 'model' })
   }
 }
 

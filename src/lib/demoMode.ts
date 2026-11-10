@@ -8,24 +8,24 @@ import type { Assessment, ContextInput } from './types'
 
 const scenarios: Array<{ file: string; location: string; context: ContextInput; caption: string }> = [
   {
-    file: '/samples/sample1.jpg', location: 'Collapsed Building Zone',
-    context: { populationDensity: 'high', infrastructureNearby: 'critical', roadAccess: 'blocked' },
-    caption: 'Collapsed building with high population exposure and blocked access',
+    file: '/samples/sample3.jpg', location: 'Major Collapse District',
+    context: { populationDensity: 'low', infrastructureNearby: 'none', roadAccess: 'clear' },
+    caption: 'Multiple buildings with major collapse and debris',
   },
   {
-    file: '/samples/sample4.jpg', location: 'Partially Collapsed Ward',
-    context: { populationDensity: 'medium', infrastructureNearby: 'some', roadAccess: 'partial' },
-    caption: 'Partially collapsed building with moderate surrounding exposure',
+    file: '/samples/sample6.jpg', location: 'Responder Access Zone',
+    context: { populationDensity: 'low', infrastructureNearby: 'none', roadAccess: 'clear' },
+    caption: 'Collapsed multi-storey building with responders nearby',
   },
   {
     file: '/samples/sample8.jpg', location: 'Flooded Residential Street',
-    context: { populationDensity: 'medium', infrastructureNearby: 'some', roadAccess: 'partial' },
+    context: { populationDensity: 'low', infrastructureNearby: 'none', roadAccess: 'clear' },
     caption: 'Flooded neighborhood with buildings still standing',
   },
   {
-    file: '/samples/sample13.jpg', location: 'Roof Damage Sector',
+    file: '/samples/sample15.jpg', location: 'Intact Building Block',
     context: { populationDensity: 'low', infrastructureNearby: 'none', roadAccess: 'clear' },
-    caption: 'Standing house with roof and wall damage',
+    caption: 'Low damage sample selected from the newly added intact or minor photos',
   },
 ]
 
