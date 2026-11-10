@@ -6,6 +6,13 @@ let classifier: Classifier | undefined
 let modelPromise: Promise<void> | undefined
 let modelReady = false
 const labels: DamageClass[] = ['intact', 'minor', 'moderate', 'severe', 'destroyed']
+const candidatePrompts = [
+  'a photo of an intact undamaged building with no visible cracks or collapse',
+  'a photo of a building with minor cosmetic damage and a few small cracks',
+  'a photo of a building with moderate structural damage, large cracks, or partial wall failure',
+  'a photo of a severely damaged building with major structural failure that is still partly standing',
+  'a photo of a destroyed collapsed building reduced to rubble after a disaster',
+]
 
 export async function initModel(onProgress?: (progress: number) => void): Promise<void> {
   if (modelReady) { onProgress?.(100); return }
@@ -71,10 +78,10 @@ export async function runInference(image: Blob | string): Promise<InferenceResul
   let result: InferenceResult
   try {
     if (!classifier) await initModel()
-    const output = await classifier!(image, labels.map((label) => `a disaster damage assessment photo showing ${label} damage`))
+    const output = await classifier!(image, candidatePrompts)
     const best = output[0]
     if (!best) throw new Error('No classifier result')
-    const classIndex = labels.findIndex((label) => best.label.toLowerCase().includes(label))
+    const classIndex = candidatePrompts.indexOf(best.label)
     if (classIndex < 0) throw new Error('Classifier returned an unknown label')
     const damageClass = labels[classIndex]
     result = { damageClass, severity: [5, 25, 48, 73, 94][classIndex], confidence: Math.round(best.score * 100), inferenceMs: Math.round(performance.now() - started), source: 'model' }
